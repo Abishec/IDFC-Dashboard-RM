@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IDFC Bank RM Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-color: #f9f9fb;
+      --card-bg: #ffffff;
+      --text-color: #222222;
+      --accent: #d50032; /* IDFC red */
+      --accent-gradient: linear-gradient(90deg, #d50032, #800080);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    header {
+      background: var(--accent-gradient);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    header .rm-name {
+      font-size: 1rem;
+      font-weight: normal;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .kpi {
+      grid-column: span 3;
+      text-align: center;
+    }
+
+    .kpi h2 {
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .full-width { grid-column: span 12; }
+    .half-width { grid-column: span 6; }
+    .third-width { grid-column: span 4; }
+
+    h3 { margin-bottom: 0.5rem; }
+
+    canvas { width: 100% !important; height: 300px !important; }
+
+    /* Drawer */
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      height: 100%;
+      background: var(--card-bg);
+      color: var(--text-color);
+      box-shadow: -2px 0 6px rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      transition: right 0.3s ease;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    .drawer.open { right: 0; }
+    .drawer h2 { margin-bottom: 1rem; color: var(--accent); }
+    .drawer .close-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>IDFC Bank</div>
+    <div class="rm-name">Relationship Manager: Arjun Mehta</div>
+  </header>
+
+  <div class="dashboard">
+    <div class="card kpi">
+      <h2>120</h2>
+      <p>Total Clients</p>
+    </div>
+    <div class="card kpi">
+      <h2>₹85 Cr</h2>
+      <p>Total AUM</p>
+    </div>
+    <div class="card kpi">
+      <h2>92%</h2>
+      <p>Retention Rate</p>
+    </div>
+    <div class="card kpi">
+      <h2>45</h2>
+      <p>New Referrals</p>
+    </div>
+
+    <div class="card full-width">
+      <h3>Revenue Growth</h3>
+      <canvas id="revenueChart"></canvas>
+    </div>
+
+    <div class="card half-width">
+      <h3>Benchmark Comparison</h3>
+      <canvas id="benchmarkChart"></canvas>
+    </div>
+    <div class="card half-width">
+      <h3>Family Group Holdings</h3>
+      <canvas id="familyChart"></canvas>
+    </div>
+
+    <div class="card third-width">
+      <h3>Client Funnel</h3>
+      <canvas id="funnelChart"></canvas>
+    </div>
+    <div class="card third-width">
+      <h3>Client Segmentation</h3>
+      <canvas id="radarChart"></canvas>
+    </div>
+    <div class="card third-width">
+      <h3>Notifications</h3>
+      <ul>
+        <li>Client A birthday tomorrow</li>
+        <li>Client B policy maturing</li>
+        <li>Client C high churn risk</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="drawer" class="drawer">
+    <button class="close-btn" onclick="closeDrawer()">Close</button>
+    <h2>Client Details</h2>
+    <p><strong>Name:</strong> <span id="dName"></span></p>
+    <p><strong>AUM:</strong> <span id="dAum"></span></p>
+    <p><strong>Age:</strong> <span id="dAge"></span></p>
+    <p><strong>Tenure:</strong> <span id="dTenure"></span></p>
+    <h3>Holdings</h3>
+    <ul id="dHoldings"></ul>
+    <h3>Life Events</h3>
+    <ul id="dEvents"></ul>
+    <h3>Churn Probability</h3>
+    <p id="dChurn"></p>
+    <h3>Referral Potential</h3>
+    <p id="dReferral"></p>
+    <h3>Timeline</h3>
+    <canvas id="timelineChart"></canvas>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('revenueChart');
+    new Chart(ctx, {
+      type: 'line',
+      data: { labels: ['Jan','Feb','Mar','Apr'], datasets:[{ label:'Revenue', data:[10,20,30,40], borderColor: '#d50032', fill:false }] }
+    });
+
+    new Chart(document.getElementById('benchmarkChart'), {
+      type: 'bar',
+      data: { labels: ['Fund A','Fund B','Fund C'], datasets:[{ label:'Client', data:[12,19,3], backgroundColor:'#d50032' },{ label:'Benchmark', data:[10,15,8], backgroundColor:'#800080' }] }
+    });
+
+    new Chart(document.getElementById('familyChart'), {
+      type: 'pie',
+      data: { labels: ['Equity','Debt','Real Estate'], datasets:[{ data:[50,30,20], backgroundColor:['#d50032','#800080','#aaa'] }] }
+    });
+
+    new Chart(document.getElementById('funnelChart'), {
+      type: 'bar',
+      data: { labels: ['Prospects','Active','Loyal'], datasets:[{ data:[100,70,50], backgroundColor:'#d50032' }] },
+      options: { indexAxis: 'y' }
+    });
+
+    new Chart(document.getElementById('radarChart'), {
+      type: 'radar',
+      data: { labels: ['Wealth','Risk','Engagement','Loyalty'], datasets:[{ label:'Segment', data:[65,59,90,81], borderColor:'#d50032', backgroundColor:'rgba(213,0,50,0.2)' }] }
+    });
+
+    function openDrawer(id){ document.getElementById('drawer').classList.add('open'); }
+    function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
+  </script>
+</body>
+</html>
